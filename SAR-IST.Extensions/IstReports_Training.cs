@@ -35,11 +35,17 @@
       sheet.Cells[1, 1].Value = today;
       sheet.Cells[1, 1].Style.Font.Bold = true;
 
-      var headers = new[] { "Last Name", "First Name", "Ham Call", "Card Type", "Status", "Missing Training", "Mission Ready", string.Format("Q{0} Missions", quarter + 1), string.Format("Q{0} Meetings", quarter + 1) };
+      var headers = new[] { "Last Name", "First Name", "Ham Call", "Card Type", "Status", "Missing Training", "Mission Ready",
+        string.Format("Q{0} Missions", quarter + 1), string.Format("Q{0} Meetings", quarter + 1),
+        string.Format("Q{0} Missions", ((quarter + 3) % 4) + 1), string.Format("Q{0} Meetings", ((quarter + 3) % 4) + 1), // "quarter + 3 % 4" is same as "(quarter - 1) + 4 % 4"
+        string.Format("Q{0} Missions", ((quarter + 2) % 4) + 1), string.Format("Q{0} Meetings", ((quarter + 2) % 4) + 1),
+        string.Format("Q{0} Missions", ((quarter + 1) % 4) + 1), string.Format("Q{0} Meetings", ((quarter + 1) % 4) + 1)
+      };
       for (int i = 0; i < headers.Length; i++)
       {
         sheet.Cells[2, i+1].Value = headers[i];
         sheet.Cells[2, i + 1].Style.Font.Bold = true;
+        if (i >= headers.Length - 8) sheet.Column(i + 1).Style.Numberformat.Format = "0";
       }
 
       int row = 3;
@@ -62,17 +68,22 @@
 
         sheet.Cells[row, 6].Value = string.Join(", ", missingCourses);
 
-
-
-        sheet.Cells[row, 8].Value = member.MissionRosters.Where(f => f.Unit.Id == id && f.TimeIn >= quarterStart && f.TimeIn < quarterStop).Select(f => f.Mission.Id).Distinct().Count();
-        var trainingRosters = member.TrainingRosters.Where(f => f.TimeIn >= quarterStart && f.TimeIn < quarterStop).ToList();
-        sheet.Cells[row, 9].Value = trainingRosters.Where(f => Regex.IsMatch(f.Training.Title, "IST .*Meeting.*", RegexOptions.IgnoreCase)).Select(f => f.Training.Id).Distinct().Count();
+        var qstart = quarterStart;
+        var qstop = quarterStop;
+        for (int i=0;i<4;i++)
+        {
+          sheet.Cells[row, 8 + i * 2].Value = member.MissionRosters.Where(f => f.Unit.Id == id && f.TimeIn >= qstart && f.TimeIn < qstop).Select(f => f.Mission.Id).Distinct().Count();
+          var trainingRosters = member.TrainingRosters.Where(f => f.TimeIn >= qstart && f.TimeIn < qstop).ToList();
+          sheet.Cells[row, 9 + i * 2].Value = trainingRosters.Where(f => Regex.IsMatch(f.Training.Title, "IST .*Meeting.*", RegexOptions.IgnoreCase)).Select(f => f.Training.Id).Distinct().Count();
+          qstop = qstart;
+          qstart = qstart.AddMonths(-3);
+        }
 
         row++;
       }
 
 
-      sheet.Cells["A:I"].AutoFitColumns();
+      sheet.Cells["A:Z"].AutoFitColumns();
     }
   }
 }
