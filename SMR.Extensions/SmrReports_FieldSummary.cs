@@ -14,7 +14,7 @@ namespace SMR.Extensions
     private static void FieldSummary(SmrReports me, ExcelPackage package, NameValueCollection queries)
     {
       var sheet = package.Workbook.Worksheets[1];
-      
+
       var memberships = me.db.Value.Units
         .Where(f => f.DisplayName == "SMR")
         .SelectMany(f => f.Memberships.Where(g => (g.EndTime == null || g.EndTime > DateTime.Now) && g.Status.IsActive && g.Status.WacLevel != WacLevel.None));
@@ -71,7 +71,7 @@ namespace SMR.Extensions
 
 
       var status = memberships.ToDictionary(f => f.Person.Id, f => new { f.Status.StatusName, f.Activated });
-      
+
       var roster = members.OrderBy(f => f.LastName).ThenBy(f => f.FirstName).ThenBy(f => f.Id).ToArray();
 
       var oldDate = new DateTime(1930, 1, 1);
@@ -86,13 +86,20 @@ namespace SMR.Extensions
         var joinHistory = memberHistory[memberId];
         for (int j = 0; j < joinHistory.Count; j++)
         {
-          if (j == 0 || joinDate.Value.Date == joinHistory[j].EndTime.Value.Date)
+          try
           {
-            joinDate = joinHistory[j].Activated;
+            if (j == 0 || joinDate.Value.Date == joinHistory[j].EndTime.Value.Date)
+            {
+              joinDate = joinHistory[j].Activated;
+            }
+            else
+            {
+              break;
+            }
           }
-          else
+          catch (Exception e)
           {
-            break;
+            log4net.LogManager.GetLogger("debug").Error($"memberId:{memberId}, j={j}, joinDate={joinDate}, history={joinHistory[j]}");
           }
         }
 

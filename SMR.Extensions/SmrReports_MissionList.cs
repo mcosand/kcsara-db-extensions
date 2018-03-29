@@ -20,7 +20,7 @@ namespace SMR.Extensions
       int year;
       if (!int.TryParse(entries["year"], out year))
       {
-        throw new InvalidOperationException("requires argument 'year'");
+        year = DateTime.Now.AddMonths(-2).Year;
       }
 
       DateTime start = new DateTime(year, 1, 1);

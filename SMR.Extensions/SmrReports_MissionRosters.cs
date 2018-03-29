@@ -20,7 +20,7 @@ namespace SMR.Extensions
       int year;
       if (!int.TryParse(entries["year"], out year))
       {
-        throw new InvalidOperationException("requires argument 'year'");
+        year = DateTime.Now.AddMonths(-2).Year;
       }
 
       DateTime start = new DateTime(year, 1, 1);
@@ -38,7 +38,7 @@ namespace SMR.Extensions
                   g => g.Key,
                   g => new
                   {
-                    Hours = g.Sum(h => (h.TimeOut - h.TimeIn).Value.TotalHours /*SqlFunctions.DateDiff("minute", h.TimeIn, h.TimeOut) / 60.0*/),
+                    Hours = g.Sum(h => (h.TimeOut - h.TimeIn)?.TotalHours /*SqlFunctions.DateDiff("minute", h.TimeIn, h.TimeOut) / 60.0*/),
                     Miles = g.Sum(h => h.Miles)
                   }));
 
