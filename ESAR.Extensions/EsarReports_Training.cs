@@ -16,7 +16,7 @@
       var db = me.db.Value;
       int row = 1;
 
-      var courseNames = new List<string>(new[] { "Course A", "Course B", "Course C", "NIMS I-100", "NIMS I-700", "Course I", "Course II", "Course III" });
+      var courseNames = new List<string>(new[] { "Course A", "Course B - Map + Compass", "Course B - First Aid", "Course C", "NIMS I-100", "NIMS I-700", "Course I", "Course II", "Course III" });
       var courses = (from tc in db.TrainingCourses where (tc.Unit.DisplayName == "ESAR" && tc.Categories.Contains("basic")) || tc.DisplayName.StartsWith("NIMS ") orderby tc.DisplayName select tc).ToArray()
           .Where(f => courseNames.Contains(f.DisplayName)).OrderBy(f => courseNames.IndexOf(f.DisplayName)).ToList();
 
